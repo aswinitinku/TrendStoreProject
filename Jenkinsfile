@@ -10,12 +10,14 @@ pipeline {
 			steps {
 				script {
 					def imageTag = "trend-app:${BUILD_ID}"
-					sh '''
-						docker build -t trend-app:${BUILD_ID} .
-						docker tag trend-app:${BUILD_ID} aswinitinku/trend-app:${BUILD_ID}
-						echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-						docker push aswinitinku/trend-app:${BUILD_ID}
-					'''
+					withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+						sh '''
+							docker build -t trend-app:${BUILD_ID} .
+							docker tag trend-app:${BUILD_ID} aswinitinku/trend-app:${BUILD_ID}
+							echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+							docker push aswinitinku/trend-app:${BUILD_ID}
+						'''
+					}
 				}
 			}
 		}
