@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/aswinitinku/TrendStoreProject.git'
+                git branch: 'main', url: 'https://github.com/aswinitinku/TrendStoreProject.git'
             }
         }
         stage('Build Docker Image') {
