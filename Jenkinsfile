@@ -21,12 +21,15 @@ pipeline {
 				}
 			}
 		}
-
-        stage('Deploy to Kubernetes') {
+		stage('Deploy to Kubernetes') {
 			steps {
-				withCredentials([file(credentialsId: 'eks-kubeconfig', variable: 'KUBECONFIG')]) {
-					sh 'kubectl apply -f deployment.yaml --validate=false'
-					sh 'kubectl apply -f service.yaml --validate=false'
+				withAWS(credentials: 'aws-eks-credentials', region: 'us-east-1') {
+					withCredentials([file(credentialsId: 'eks-kubeconfig', variable: 'KUBECONFIG')]) {
+						sh 'aws sts get-caller-identity'
+						sh 'kubectl get nodes'
+						sh 'kubectl apply -f deployment.yaml --validate=false'
+						sh 'kubectl apply -f service.yaml --validate=false'
+					}
 				}
 			}
 		}
