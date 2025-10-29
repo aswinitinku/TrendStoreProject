@@ -6,24 +6,20 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/aswinitinku/TrendStoreProject.git'
             }
         }
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    docker.build("trend-app:${env.BUILD_ID}")
-                }
-            }
-        }
-		stage('Push Docker Image') {
+        stage('Build & Push Docker Image') {
 			steps {
-				withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+				script {
+					def imageTag = "trend-app:${BUILD_ID}"
 					sh '''
+						docker build -t trend-app:${BUILD_ID} .
+						docker tag trend-app:${BUILD_ID} aswinitinku/trend-app:${BUILD_ID}
 						echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-						docker tag trend-app:${env.BUILD_ID} $DOCKER_USER/trend-app:${env.BUILD_ID}
-						docker push $DOCKER_USER/trend-app:${env.BUILD_ID}
+						docker push aswinitinku/trend-app:${BUILD_ID}
 					'''
 				}
 			}
 		}
+
         stage('Deploy to Kubernetes') {
             steps {
                 sh 'kubectl apply -f deployment.yaml'
